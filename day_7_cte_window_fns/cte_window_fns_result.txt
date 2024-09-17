@@ -1,0 +1,117 @@
+Rank visitors by their spendings
+
+
+        WITH sales_of_visitors AS (
+            SELECT
+                visitors.id AS visitor_id,
+                visitors.name AS visitor_name,
+                sales.sale_date AS sale_date,
+                sales.amount AS sale_amount
+            FROM sales
+            JOIN visitors ON sales.visitor_id = visitors.id
+        )
+        SELECT * FROM (
+            SELECT
+                visitor_id,
+                visitor_name,
+                sale_date,
+                sale_amount,
+                RANK() OVER (PARTITION BY visitor_id ORDER BY sale_amount DESC) AS sale_amount_rank
+            FROM sales_of_visitors
+        ) ranked_sales
+        WHERE sale_amount_rank <= 3 LIMIT 10;
+    
+
++------------+---------------+------------+-------------+------------------+
+| visitor_id | visitor_name  | sale_date  | sale_amount | sale_amount_rank |
++------------+---------------+------------+-------------+------------------+
+| 1          | Donald Ashley | 2024-02-08 | 4998.36     | 1                |
+| 1          | Donald Ashley | 2024-03-01 | 4993.60     | 2                |
+| 1          | Donald Ashley | 2024-05-21 | 4988.06     | 3                |
+| 2          | John Valdez   | 2024-08-01 | 4988.67     | 1                |
+| 2          | John Valdez   | 2024-03-20 | 4981.03     | 2                |
+| 2          | John Valdez   | 2024-07-28 | 4970.56     | 3                |
+| 3          | David Dixon   | 2024-05-14 | 4977.59     | 1                |
+| 3          | David Dixon   | 2024-06-17 | 4954.78     | 2                |
+| 3          | David Dixon   | 2024-06-13 | 4948.39     | 3                |
+| 4          | Jane Rogers   | 2024-08-16 | 4998.63     | 1                |
++------------+---------------+------------+-------------+------------------+
+
+==============================~~~==============================
+
+
+Sales above average per visitors
+
+
+        WITH visitor_avg AS (
+            SELECT
+                visitor_id,
+                visitors.name AS visitor_name,
+                AVG(amount) OVER (PARTITION BY visitor_id) AS avg_sale_amount
+            FROM sales
+            JOIN visitors ON sales.visitor_id = visitors.id
+        )
+        SELECT DISTINCT ON (sales.visitor_id)
+            sales.id,
+            sales.visitor_id,
+            visitor_avg.visitor_name,
+            visitor_avg.avg_sale_amount,
+            sales.amount as sale_amount
+        FROM sales
+        JOIN visitor_avg ON visitor_avg.visitor_id = sales.visitor_id
+        WHERE sales.amount > visitor_avg.avg_sale_amount
+        ORDER BY sales.visitor_id, sales.amount
+        LIMIT 10
+    
+
++-------+------------+-----------------+-----------------------+-------------+
+| id    | visitor_id | visitor_name    | avg_sale_amount       | sale_amount |
++-------+------------+-----------------+-----------------------+-------------+
+| 18618 | 1          | Donald Ashley   | 2587.5475523012552301 | 2603.37     |
+| 58273 | 2          | John Valdez     | 2522.9570112781954887 | 2526.92     |
+| 75124 | 3          | David Dixon     | 2517.0885087719298246 | 2524.43     |
+| 91484 | 4          | Jane Rogers     | 2580.1673754789272031 | 2589.18     |
+| 2254  | 5          | Sabrina Vega    | 2564.2573663366336634 | 2565.14     |
+| 96523 | 6          | Evan Keller     | 2552.6886885245901639 | 2569.35     |
+| 72871 | 7          | Max Clark       | 2585.9474148296593186 | 2605.29     |
+| 32935 | 8          | Pamela Cooper   | 2465.1433914728682171 | 2466.01     |
+| 94141 | 9          | Angela Harrison | 2575.6137051039697543 | 2577.19     |
+| 11227 | 10         | Jason Young     | 2505.4374952561669829 | 2508.47     |
++-------+------------+-----------------+-----------------------+-------------+
+
+==============================~~~==============================
+
+
+Avegrage Sale amount per Artwork
+
+
+        WITH avg_sales AS (
+            SELECT
+                artwork_id,
+                AVG(amount) AS avg_amount
+            FROM sales
+            GROUP BY artwork_id
+        )
+        SELECT
+            artwork_id,
+            avg_amount
+        FROM avg_sales
+        ORDER BY avg_amount DESC LIMIT 10;
+    
+
++------------+-----------------------+
+| artwork_id | avg_amount            |
++------------+-----------------------+
+| 373        | 2836.0409200000000000 |
+| 12         | 2803.5374683544303797 |
+| 183        | 2767.6626530612244898 |
+| 271        | 2761.3488188976377953 |
+| 206        | 2754.8299609375000000 |
+| 296        | 2749.1833050847457627 |
+| 258        | 2742.4498023715415020 |
+| 116        | 2741.9481496062992126 |
+| 165        | 2724.7520491803278689 |
+| 286        | 2722.8738431372549020 |
++------------+-----------------------+
+
+==============================~~~==============================
