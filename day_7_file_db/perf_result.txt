@@ -2,10 +2,10 @@ File DB:
 insert time taken for 10000 operations: 0.0003020000 s
 select time taken for 10000 operations: 0.0015240000 s
 
-Hashed DB:
+Hashed File DB:
 insert time taken for 10000 operations: 0.0000400000 s
 select time taken for 10000 operations: 0.0000180000 s
 
-Sorted Array DB:
+Sorted Array File DB:
 insert time taken for 10000 operations: 0.0001290000 s
 select time taken for 10000 operations: 0.0000930000 s

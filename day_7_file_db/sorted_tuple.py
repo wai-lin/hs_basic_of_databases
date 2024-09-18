@@ -1,4 +1,4 @@
-"""Select with sorted array"""
+"""Select with sorted tuple"""
 
 import os
 import time
